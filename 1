@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation Connections Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .word {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .word.selected {
+            background-color: #a0d8ef;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+        @keyframes explode {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(40);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Evaluation Connections Game</h1>
+        <div class="grid" id="wordGrid"></div>
+        <button onclick="checkConnections()">Check Connections</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const words = [
+            "Formative", "Summative", "Developmental", "Participatory",
+            "Survey", "Interview", "Observation", "Focus Group",
+            "Outcome", "Impact", "Indicator", "Baseline",
+            "Funder", "Program Manager", "Beneficiary", "Evaluator"
+        ];
+
+        const correctGroups = [
+            ["Formative", "Summative", "Developmental", "Participatory"],
+            ["Survey", "Interview", "Observation", "Focus Group"],
+            ["Outcome", "Impact", "Indicator", "Baseline"],
+            ["Funder", "Program Manager", "Beneficiary", "Evaluator"]
+        ];
+
+        const grid = document.getElementById('wordGrid');
+        const messageEl = document.getElementById('message');
+        let selectedWords = [];
+        let solvedGroups = 0;
+
+        // Shuffle and create word elements
+        words.sort(() => Math.random() - 0.5).forEach(word => {
+            const wordEl = document.createElement('div');
+            wordEl.className = 'word';
+            wordEl.textContent = word;
+            wordEl.onclick = () => toggleWord(wordEl);
+            grid.appendChild(wordEl);
+        });
+
+        function toggleWord(wordEl) {
+            if (!wordEl.classList.contains('solved')) {
+                wordEl.classList.toggle('selected');
+                const word = wordEl.textContent;
+                if (selectedWords.includes(word)) {
+                    selectedWords = selectedWords.filter(w => w !== word);
+                } else {
+                    selectedWords.push(word);
+                }
+            }
+        }
+
+        function checkConnections() {
+            if (selectedWords.length !== 4) {
+                messageEl.textContent = "Please select exactly 4 words.";
+                return;
+            }
+
+            const correctGroupIndex = correctGroups.findIndex(group => 
+                selectedWords.every(word => group.includes(word))
+            );
+
+            if (correctGroupIndex !== -1) {
+                messageEl.textContent = "Correct! You found a valid connection.";
+                selectedWords.forEach(word => {
+                    const wordEl = Array.from(grid.children).find(el => el.textContent === word);
+                    wordEl.style.backgroundColor = '#90EE90'; // Light green
+                    wordEl.classList.add('solved');
+                });
+                solvedGroups++;
+                if (solvedGroups === 4) {
+                    celebrate();
+                }
+            } else {
+                messageEl.textContent = "Sorry, that's not a correct group. Try again!";
+            }
+
+            selectedWords = [];
+            document.querySelectorAll('.word.selected').forEach(el => el.classList.remove('selected'));
+        }
+
+        function celebrate() {
+            messageEl.textContent = "Congratulations! You've solved all connections!";
+            for (let i = 0; i < 50; i++) {
+                createFirework();
+            }
+        }
+
+        function createFirework() {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = Math.random() * window.innerWidth + 'px';
+            firework.style.top = Math.random() * window.innerHeight + 'px';
+            firework.style.backgroundColor = getRandomColor();
+            document.body.appendChild(firework);
+            setTimeout(() => {
+                document.body.removeChild(firework);
+            }, 1000);
+        }
+
+        function getRandomColor() {
+            return `hsl(${Math.random() * 360}, 100%, 50%)`;
+        }
+    </script>
+</body>
+</html>
